@@ -1,11 +1,12 @@
 import cv2
 import numpy as np
+import sys
 
 def nothing(x):
     pass
 
 # Create a black image, a window
-img = cv2.imread('data/perspective.png')
+img = cv2.imread(sys.argv[1])
 cv2.namedWindow('image')
 
 # create trackbars for color change
@@ -14,8 +15,8 @@ cv2.createTrackbar('beta','image',0,360,nothing)
 cv2.createTrackbar('gamma','image',0,360,nothing)
 cv2.createTrackbar('f','image',0,2000,nothing)
 cv2.createTrackbar('z_translation','image',0,2000,nothing)
-cv2.createTrackbar('x_translation','image',0,2000,nothing)
-cv2.createTrackbar('y_translation','image',0,2000,nothing)
+cv2.createTrackbar('x_translation','image',1000,2000,nothing)
+cv2.createTrackbar('y_translation','image',1000,2000,nothing)
 
 first = True
 transformation_mat = np.zeros((3,3))
@@ -65,8 +66,8 @@ while(1):
 
     # translation to the projected plane
     camera_translation = np.array(
-        [[1, 0, 0, x_translation],
-         [0, 1, 0, y_translation],
+        [[1, 0, 0, x_translation-1000],
+         [0, 1, 0, y_translation-1000],
          [0, 0, 1, z_translation],
          [0, 0, 0, 1]]
     )
@@ -87,11 +88,8 @@ while(1):
     
     cv2.imshow('image',dst)
     k = cv2.waitKey(1) & 0xFF
-    if k == 27: # Esc
-        # save intrinsic and extrinsics and exit
-        np.save('output/intrinsics', intrinsic)
-        np.save('output/rotation', rotation)
-        np.save('output/translation',camera_translation)
+    if k == 27 or k == 113: # Esc or q
+        break
     elif k == 112: # p
         print("---------PRINT OUT ---------")
         print("rotation\n", rotation)
