@@ -18,9 +18,6 @@ cv2.createTrackbar('z_translation','image',0,2000,nothing)
 cv2.createTrackbar('x_translation','image',1000,2000,nothing)
 cv2.createTrackbar('y_translation','image',1000,2000,nothing)
 
-first = True
-transformation_mat = np.zeros((3,3))
-
 while(1):
 
     # get current positions of four trackbars
@@ -35,7 +32,7 @@ while(1):
     h = img.shape[0]
     w = img.shape[1]
 
-    # translate the image roughly to the center of the result
+    # translate the image roughly to the center of the result and removes z rotation component to get homography
     image_translation_mat = np.array(
         [[1, 0, -w/2],
          [0, 1, -h*1.2],
@@ -82,9 +79,9 @@ while(1):
     # M = ((K * (T * R)) * image_translation)
     extrinsic = np.matmul(camera_translation, rotation) # 4x4 * 4x4 -> 4x4
     transformation = np.matmul(intrinsic, extrinsic) # 3x4 * 4x4 -> 3x4
-    transformation_mat = np.matmul(transformation, image_translation_mat) # 3x4 * 4x3 -> 3x3  
+    homography = np.matmul(transformation, image_translation_mat) # 3x4 * 4x3 -> 3x3  
 
-    dst = cv2.warpPerspective(img, transformation_mat, (w,int(h*1.5)), flags=(cv2.INTER_CUBIC | cv2.WARP_INVERSE_MAP))
+    dst = cv2.warpPerspective(img, homography, (w,int(h*1.5)), flags=(cv2.INTER_CUBIC | cv2.WARP_INVERSE_MAP))
     
     cv2.imshow('image',dst)
     k = cv2.waitKey(1) & 0xFF
@@ -96,6 +93,6 @@ while(1):
         print("camera_translation\n", camera_translation)
         print("extrinsic\n", extrinsic)
         print("intrinsic\n", intrinsic)
-        print("transformation_mat\n", transformation_mat)
+        print("homography\n", homography)
 
 cv2.destroyAllWindows()
